@@ -15,31 +15,46 @@ app.use(express.static(__dirname + '/../client/dist'));
 
 //OPTION 1: Use regular routes
 app.get('/search', function(req, res) {
-  // get the search genre     
+  getMoviesByGenre(req.query)
+      .then(results => res.status(200).send(results.data))
+      .catch(err => res.status(500).send('server error - please try again later!'));
+});
 
-  // https://www.themoviedb.org/account/signup
-
-  // use this endpoint to search for movies by genres, you will need an API key
-
-  // https://api.themoviedb.org/3/discover/movie
-
-  // and sort them by horrible votes using the search parameters in the API
+app.get('/favorites', function(req, res) {
+  getAllFavorites((err, docs) => {
+      if (err) {
+          res.status(500).send('server error - please try again later!');
+      } else {
+          res.status(200).send(docs);
+      }
+  });
 });
 
 app.get('/genres', function(req, res) {
-  // make an axios request to get the list of official genres
-  
-  // use this endpoint, which will also require your API key: https://api.themoviedb.org/3/genre/movie/list
-
-  // send back
+  getGenres()
+      .then(results => res.status(200).send(results.data))
+      .catch(err => res.status(500).send('server error - please try again later!'));
 });
 
 app.post('/save', function(req, res) {
-
+  saveFavorite(req.body.data.movie, (err, success) => {
+      if (err) {
+          res.status(500).send('err: ', err);
+      } else {
+          res.status(200).send('Movie saved successfully!');
+      }
+  });
 });
 
 app.post('/delete', function(req, res) {
-
+  let movieID = req.body.data.id;
+  deleteFavorite(movieID, (err, success) => {
+      if (err) {
+          res.status(500).send(err);
+      } else {
+          res.status(201).send('Movie successfully removed from favorites.');
+      }
+  });
 });
 
 //OPTION 2: Use Express Router
